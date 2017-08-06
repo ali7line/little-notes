@@ -35,7 +35,7 @@ Lets not send commands and just get into the container.
 
 To make it more like a real terminal lets add **"-t"** command (stands for tty).
 
-`$ debian run -i -t debian`
+`$ docker run -i -t debian`
 
 `ls`
 
@@ -154,11 +154,11 @@ Lets make some changes and save it:
 
 > so we made the changes and we want to save our master peaice.
 
-`$ docker commit debian5 text/random-cow`
+`$ docker commit debian5 test/random-cow`
 
 lets try it:
 
-`$ docker run –rm test/random-cow /usr/games/cow hi again`
+`$ docker run --rm test/random-cow /usr/games/cowsay hi again`
 
 ##Docker Everywhere
 
@@ -206,34 +206,26 @@ Lets run a script in a container:
 
 >If you knwow a little git, there is something called .gitignore to not include files in repo. Docker has same thing. When you build a container image all the files including the Dockerfiles in the current directory is send to docker demon. You sometimes do not want to send all files ! Use .dockerignore file to specify those files.
 
-Little networking:
+## Sharing Data
 
-create a web server | a redis server
+---
 
-docker pull nginx
-docker pull redis
+In *Dockerfile* you can create a volume in a container. To connect it to your host for security/portability reasons it cannot be done through *Dockerfile* directly but through command line instead. In Dockerfile add the following:
 
-docker run –name=myreedis-server -d redis
-docker run –rm -i -t –link myredis-server:myredis-server redis /bin/bash
-$$ redis-cli -h myredis-server -p 6379
->> PING
->> set 'abc' 123
->> get abc
+`VOLUME /data`
 
-exit
+and using the command line you can connect the **VOLUME**:
 
-cat /etc/hosts 			< has myredis-server ip assigned >
+`$ docker run -v /data debian`
+
+`$ docker run --rm -it -v /tmp/dockerdir:/data`
+
+`# last >> /data/testfile`
+
+In host go to /tmp/dockerdir folder:
+
+`$ tail -f /tmp/dockerdir/testfile`
+
+> The good thing is that after the container is exited the files will still remain on host computer.
 
 
-
-Little Storing
-
-in dockerfile you can create a volume in container but not directly connect it to your pc for security resons.
-
-VOLUME /data
-
-using the command like you can.
-docker run -v /data debian
-docker run –rm -it -v /tmp/dockerdir:/data …
-
-tail -f /data/random-dump
